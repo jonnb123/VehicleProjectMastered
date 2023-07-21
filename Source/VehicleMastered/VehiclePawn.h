@@ -24,6 +24,8 @@ public:
 	// throttle and steering, where val is how much throttle or steering to apply
 	void ApplyThrottle(float val);
 	void ApplySteering(float val);
+	void ApplyReverse(float val);
+
 
 	// Look around
 	void LookUp(float val);

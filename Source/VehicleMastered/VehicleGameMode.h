@@ -13,5 +13,30 @@ UCLASS()
 class VEHICLEMASTERED_API AVehicleGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void GameStart();
+
+	UFUNCTION(BlueprintCallable)
+	void GameEnd(bool Win);
+
+	UFUNCTION(BlueprintCallable)
+	void CrossFinishLine();
+
+	UFUNCTION(BlueprintCallable)
+	void StartCountdown();
+
+	UFUNCTION(BlueprintCallable)
+	void OutOfTime();
+
+	UPROPERTY(EditAnywhere)
+	float TimerDuration;
+
+
 };

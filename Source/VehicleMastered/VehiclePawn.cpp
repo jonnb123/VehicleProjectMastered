@@ -45,6 +45,7 @@ void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputCompone
 
     // bindings
     PlayerInputComponent->BindAxis("Throttle", this, &AVehiclePawn::ApplyThrottle);
+    PlayerInputComponent->BindAxis("Reverse", this, &AVehiclePawn::ApplyReverse);
     PlayerInputComponent->BindAxis("Steer", this, &AVehiclePawn::ApplySteering);
     PlayerInputComponent->BindAxis("LookUp", this, &AVehiclePawn::LookUp);
     PlayerInputComponent->BindAxis("Turn", this, &AVehiclePawn::Turn);
@@ -56,13 +57,20 @@ void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputCompone
 
 void AVehiclePawn::ApplyThrottle(float val)
 {
+
+     // Print the throttle input value for debugging
+
     GetVehicleMovementComponent()->SetThrottleInput(val);
 }
 
 void AVehiclePawn::ApplySteering(float val)
 {
     GetVehicleMovementComponent()->SetSteeringInput(val);
+}
 
+void AVehiclePawn::ApplyReverse(float val)
+{
+    GetVehicleMovementComponent()->SetBrakeInput(val);
 }
 
 void AVehiclePawn::LookUp(float val)
