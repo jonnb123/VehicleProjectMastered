@@ -45,4 +45,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Timer")
 	void AddTimeToTimerDuration(float TimeToAdd);
+
+	// Create a TimerHandle to manage the timer
+	FTimerHandle TimerHandle;
+
+	// Define the TimerDelegate with the GameStart function as the target
+	FTimerDelegate TimerDelegate;
 };
