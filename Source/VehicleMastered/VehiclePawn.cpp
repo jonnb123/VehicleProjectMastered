@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "ChaosVehicleMovementComponent.h" // this is used now instead of WheeledVehicleMovementComponent4W.h
+#include "CarWidget.h"
 
 // make the inputs variables so we I don't mistype
 // static const FName NAME_SteerInput("Steer");
@@ -29,7 +30,17 @@ AVehiclePawn::AVehiclePawn() // constructor
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("ChaseCamera"));
     Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
     Camera->FieldOfView = 90.f;
-    
+}
+
+void AVehiclePawn::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // Create the widget and add it to the class here
+    if (WidgetClass)
+    {
+        CreateWidget<UUserWidget>(GetWorld(), WidgetClass)->AddToViewport();
+    }
 }
 
 void AVehiclePawn::Tick(float DeltaTime)

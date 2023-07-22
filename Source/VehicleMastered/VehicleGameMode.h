@@ -7,7 +7,7 @@
 #include "VehicleGameMode.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class VEHICLEMASTERED_API AVehicleGameMode : public AGameModeBase
@@ -19,7 +19,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-
 	UFUNCTION(BlueprintCallable)
 	void GameStart();
 
@@ -30,13 +29,20 @@ public:
 	void CrossFinishLine();
 
 	UFUNCTION(BlueprintCallable)
-	void StartCountdown();
-
-	UFUNCTION(BlueprintCallable)
 	void OutOfTime();
 
+	UFUNCTION(BlueprintCallable)
+	void DisablePlayerInput();
+
 	UPROPERTY(EditAnywhere)
-	float TimerDuration;
+	float TimeRemaining;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> WinWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> LoseWidgetClass;
+
+	UFUNCTION(BlueprintCallable, Category = "Timer")
+	void AddTimeToTimerDuration(float TimeToAdd);
 };

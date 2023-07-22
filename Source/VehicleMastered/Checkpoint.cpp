@@ -79,7 +79,7 @@ void ACheckpoint::OnBoxBeginOverlap(UPrimitiveComponent *OverlappedComponent, AA
 				// Add any other logic you want to perform when the player drives through a regular checkpoint
 				// (not the finish line)
 				UE_LOG(LogTemp, Log, TEXT("You drove through a regular checkpoint."));
-				GameMode->TimerDuration += TimeToAdd;
+				GameMode->AddTimeToTimerDuration(5.0f);
 			}
 		}
 	}
