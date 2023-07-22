@@ -39,7 +39,9 @@ void AVehicleGameMode::DisablePlayerInput()
 void AVehicleGameMode::GameEnd(bool Win)
 {
 	DisablePlayerInput();
-
+	// Get the default player controller
+	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	PlayerController->SetShowMouseCursor(true);
 	if (Win == true)
 	{
 		// Create the widget and add it to the class here
@@ -48,9 +50,6 @@ void AVehicleGameMode::GameEnd(bool Win)
 			CreateWidget<UUserWidget>(GetWorld(), WinWidgetClass)->AddToViewport();
 		}
 		UE_LOG(LogTemp, Log, TEXT("You Win!!!"));
-		// Get the default player controller
-		APlayerController *PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-		PlayerController->SetShowMouseCursor(true);
 	}
 	if (Win == false)
 	{
@@ -60,9 +59,6 @@ void AVehicleGameMode::GameEnd(bool Win)
 			CreateWidget<UUserWidget>(GetWorld(), LoseWidgetClass)->AddToViewport();
 		}
 		UE_LOG(LogTemp, Log, TEXT("You Lost!!!"));
-		// Get the default player controller
-		APlayerController *PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-		PlayerController->SetShowMouseCursor(true);
 	}
 }
 
