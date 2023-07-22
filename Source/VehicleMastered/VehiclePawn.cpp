@@ -9,6 +9,8 @@
 #include "Components/InputComponent.h"
 #include "ChaosVehicleMovementComponent.h" // this is used now instead of WheeledVehicleMovementComponent4W.h
 #include "CarWidget.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // make the inputs variables so we I don't mistype
 // static const FName NAME_SteerInput("Steer");
@@ -63,6 +65,8 @@ void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputCompone
 
     PlayerInputComponent->BindAction("Handbrake", IE_Pressed, this, &AVehiclePawn::OnHandbrakePressed);
     PlayerInputComponent->BindAction("Handbrake", IE_Released, this, &AVehiclePawn::OnHandbrakeReleased);
+    PlayerInputComponent->BindAction("Quit", IE_Pressed, this, &AVehiclePawn::QuitGame);
+
 
 }
 
@@ -108,6 +112,15 @@ void AVehiclePawn::OnHandbrakePressed()
 void AVehiclePawn::OnHandbrakeReleased()
 {
     GetVehicleMovementComponent()->SetHandbrakeInput(false);
+}
+
+void AVehiclePawn::QuitGame()
+{
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    if (PlayerController)
+    {
+        PlayerController->ConsoleCommand("quit");
+    }
 }
 
 void AVehiclePawn::UpdateInAirControl(float DeltaTime)

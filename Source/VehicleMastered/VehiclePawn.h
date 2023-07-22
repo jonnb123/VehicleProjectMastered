@@ -37,6 +37,10 @@ public:
 	void OnHandbrakePressed();
 	void OnHandbrakeReleased();
 
+	// Quit
+	void QuitGame();
+
+
 	// Update in-air physics, this uses the tick-function
 	void UpdateInAirControl(float DeltaTime);
 
