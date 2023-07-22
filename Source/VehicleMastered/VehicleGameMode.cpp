@@ -75,7 +75,7 @@ void AVehicleGameMode::CrossFinishLine()
 void AVehicleGameMode::OutOfTime()
 {
 	// Delay of 3 seconds before calling the GameStart function
-	TimeRemaining = 10.0f;
+	TimeRemaining = 15.0f;
 
 	TimerDelegate.BindLambda([this]()
 							 {

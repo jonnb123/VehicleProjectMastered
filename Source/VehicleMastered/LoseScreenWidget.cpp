@@ -20,5 +20,5 @@ void ULoseScreenWidget::RestartGame()
     APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
 
     // Open the level by name (replace "YourLevelName" with the actual name of the level you want to open)
-    UGameplayStatics::OpenLevel(PlayerController, FName("CarLevel"));
+    UGameplayStatics::OpenLevel(PlayerController, FName("IslandCarLevel"));
 }

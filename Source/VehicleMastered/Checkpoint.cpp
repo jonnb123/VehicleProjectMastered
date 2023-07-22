@@ -81,6 +81,7 @@ void ACheckpoint::OnBoxBeginOverlap(UPrimitiveComponent *OverlappedComponent, AA
 				UE_LOG(LogTemp, Log, TEXT("You drove through a regular checkpoint."));
 				GameMode->AddTimeToTimerDuration(5.0f);
 			}
+			Destroy(); // destroy the checkpoint after crossing
 		}
 	}
 }
