@@ -22,8 +22,11 @@ protected:
 	UPROPERTY(meta = ( BindWidget ))
 	class UTextBlock* TimeRemainingText;
 
-	// UPROPERTY(meta = ("BindWidget"))
-	// class UButton* GenerateButton;
+	UPROPERTY(meta = ( BindWidget ))
+	class UTextBlock* SpeedLabel;
+
+	UPROPERTY(meta = ( BindWidget ))
+	class UCanvasPanel* CanvasPanel; 
 
 	void NativeConstruct() override;
 
@@ -32,5 +35,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateTimeLabelText();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateSpeedText();
 
 };

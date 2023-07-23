@@ -34,8 +34,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DisablePlayerInput();
 
-	UPROPERTY(EditAnywhere)
-	float TimeRemaining;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UUserWidget> WinWidgetClass;
@@ -46,9 +45,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Timer")
 	void AddTimeToTimerDuration(float TimeToAdd);
 
-	// Create a TimerHandle to manage the timer
+	// for the overall game timer
 	FTimerHandle TimerHandle;
-
-	// Define the TimerDelegate with the GameStart function as the target
 	FTimerDelegate TimerDelegate;
+	UPROPERTY(EditAnywhere)
+	float TimeRemaining;
+
+	// for the start countdown
+	FTimerHandle StartTimerHandle;
+	FTimerDelegate StartTimerDelegate;
+	UPROPERTY(EditAnywhere)
+	float DelayTime;
+
 };

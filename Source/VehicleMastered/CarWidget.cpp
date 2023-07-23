@@ -4,6 +4,8 @@
 #include "VehicleGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "UMG/Public/Components/TextBlock.h"
+#include "VehiclePawn.h"
+#include "ChaosVehicleMovementComponent.h"
 
 void UCarWidget::NativeConstruct()
 {
@@ -34,4 +36,13 @@ void UCarWidget::UpdateTimeLabelText()
 
         TimeLabel->SetText(FText::FromString(TimeLabelString));
     }
+}
+
+void UCarWidget::UpdateSpeedText()
+{
+    APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
+	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+
+    MyVehiclePawn->GetVehicleMovementComponent()->GetForwardSpeed();
 }

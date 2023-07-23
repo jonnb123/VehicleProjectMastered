@@ -40,6 +40,8 @@ public:
 	// Quit
 	void QuitGame();
 
+	void ShowWidgetOnTimeUp();
+
 
 	// Update in-air physics, this uses the tick-function
 	void UpdateInAirControl(float DeltaTime);

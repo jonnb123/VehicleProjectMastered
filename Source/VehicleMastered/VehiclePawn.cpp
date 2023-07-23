@@ -10,6 +10,8 @@
 #include "ChaosVehicleMovementComponent.h" // this is used now instead of WheeledVehicleMovementComponent4W.h
 #include "CarWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
+#include "Camera/PlayerCameraManager.h"
 
 
 // make the inputs variables so we I don't mistype
@@ -38,11 +40,12 @@ void AVehiclePawn::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Create the widget and add it to the class here
-    if (WidgetClass)
-    {
-        CreateWidget<UUserWidget>(GetWorld(), WidgetClass)->AddToViewport();
-    }
+    
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager;
+    PlayerCameraManager->StartCameraFade(1.0f, 1.0f, 3.0f, FLinearColor::Black);
+
+    
 }
 
 void AVehiclePawn::Tick(float DeltaTime)
@@ -120,6 +123,15 @@ void AVehiclePawn::QuitGame()
     if (PlayerController)
     {
         PlayerController->ConsoleCommand("quit");
+    }
+}
+
+void AVehiclePawn::ShowWidgetOnTimeUp()
+{
+    // Create the widget and add it to the class here
+    if (WidgetClass)
+    {
+        CreateWidget<UUserWidget>(GetWorld(), WidgetClass)->AddToViewport();
     }
 }
 

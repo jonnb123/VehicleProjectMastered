@@ -11,13 +11,22 @@ void AVehicleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OutOfTime();
+	GameStart();
 }
 
 void AVehicleGameMode::GameStart()
 {
-	UE_LOG(LogTemp, Log, TEXT("The game is starting")); // this is called after the startcountdown, i.e. after 3 seconds
-														// OutOfTime();
+	// Set a 3-second delay before calling GameStart function
+	DelayTime = 3.0f;
+
+	StartTimerDelegate.BindLambda([this]()
+								  {
+	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
+	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+	MyVehiclePawn->ShowWidgetOnTimeUp();
+		OutOfTime(); }); // once the 3 second timer is complete call the main game timer!
+	GetWorldTimerManager().SetTimer(StartTimerHandle, StartTimerDelegate, DelayTime, false);
 }
 
 void AVehicleGameMode::DisablePlayerInput()
@@ -33,11 +42,6 @@ void AVehicleGameMode::DisablePlayerInput()
 
 	MyVehiclePawn->GetVehicleMovementComponent()->SetThrottleInput(0.0f);
 	MyVehiclePawn->GetVehicleMovementComponent()->SetBrakeInput(0.0f);
-
-	// if (MyVehiclePawn)
-	// {
-
-	// }
 }
 
 void AVehicleGameMode::GameEnd(bool Win)
