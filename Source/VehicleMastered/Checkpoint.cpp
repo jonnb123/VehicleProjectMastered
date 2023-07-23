@@ -3,6 +3,7 @@
 #include "Checkpoint.h"
 #include "VehicleGameMode.h"
 #include "VehiclePawn.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACheckpoint::ACheckpoint()
@@ -57,6 +58,11 @@ void ACheckpoint::BeginPlay()
 void ACheckpoint::OnBoxBeginOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp,
 									int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
+	// Play the sound at the location of the checkpoint if the sound cue is valid
+	if (CheckpointSoundCue)
+	{
+		UGameplayStatics::PlaySound2D(this, CheckpointSoundCue);
+	}
 	// Get the specific Game Mode class directly
 	AVehicleGameMode *GameMode = GetWorld()->GetAuthGameMode<AVehicleGameMode>();
 

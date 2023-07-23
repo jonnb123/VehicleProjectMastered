@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Sound/SoundCue.h"
 #include "Checkpoint.generated.h"
 
 
@@ -37,6 +38,10 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UBoxComponent* BoxCollisionComponent;
 
+    // Reference to the sound cue for the checkpoint sound
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundCue* CheckpointSoundCue;
+
 	// Function to handle the begin overlap event
     UFUNCTION()
     void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -45,10 +50,6 @@ protected:
     // is this the finish line?
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (InstanceEditable = "true"))
     bool IsFinishLine = false;
-
-    // Time to add
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (InstanceEditable = "true"))
-    int TimeToAdd = 10;
 
 public:	
 	// Called every frame
