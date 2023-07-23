@@ -20,7 +20,7 @@ void AVehicleGameMode::BeginPlay()
 void AVehicleGameMode::GameStart()
 {
 	// Set a 3-second delay before calling GameStart function
-	DelayTime = 3.0f;
+	DelayTime = 1.5;
 
 	StartTimerDelegate.BindLambda([this]()
 								  {

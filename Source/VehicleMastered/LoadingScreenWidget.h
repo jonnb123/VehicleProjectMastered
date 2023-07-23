@@ -7,18 +7,24 @@
 #include "LoadingScreenWidget.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class VEHICLEMASTERED_API ULoadingScreenWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(meta = ( BindWidget ))
-	class UCanvasPanel* CanvasPanel; 
+public:
+	UPROPERTY(meta = (BindWidget))
+	class UCanvasPanel *CanvasPanel;
 
-	UPROPERTY(meta = ( BindWidget ))
-	class UTextBlock* LoadingText; 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock *LoadingText;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation *FadeOff;
+
+	UFUNCTION(BlueprintCallable, Category = "Widget Animation")
+	UWidgetAnimation* GetFadeOffAnimation() const;
 
 };

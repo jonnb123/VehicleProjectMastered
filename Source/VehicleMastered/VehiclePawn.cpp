@@ -12,46 +12,45 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
-
+#include "UMG/Public/Animation/WidgetAnimation.h"
+#include "LoadingScreenWidget.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
 
 // make the inputs variables so we I don't mistype
 // static const FName NAME_SteerInput("Steer");
 // static const FName NAME_ThrottleInput("Throttle");
 
-
 AVehiclePawn::AVehiclePawn() // constructor
 {
     // this gets the vehicle movement component
     // UChaosWheeledVehicleMovementComponent* Vehicle = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovement());
-   
+
     // Create a spring arm component for our chase camera
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
     SpringArm->TargetArmLength = 250.0f;
     SpringArm->bUsePawnControlRotation = true;
 
-    // create the chase camera component 
+    // create the chase camera component
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("ChaseCamera"));
     Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
     Camera->FieldOfView = 90.f;
+
+    // Create the audio component and attach it to the root component
+    EngineAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("EngineAudioComponent"));
+    EngineAudioComponent->SetupAttachment(RootComponent);
 }
 
 void AVehiclePawn::BeginPlay()
 {
     Super::BeginPlay();
-
     
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-    APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager;
-    PlayerCameraManager->StartCameraFade(1.0f, 1.0f, 3.0f, FLinearColor::Black);
-
 }
 
 void AVehiclePawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    UpdateInAirControl(DeltaTime);
+    SetupEngineAudio();
 }
 
 void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
@@ -68,14 +67,12 @@ void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputCompone
     PlayerInputComponent->BindAction("Handbrake", IE_Pressed, this, &AVehiclePawn::OnHandbrakePressed);
     PlayerInputComponent->BindAction("Handbrake", IE_Released, this, &AVehiclePawn::OnHandbrakeReleased);
     PlayerInputComponent->BindAction("Quit", IE_Pressed, this, &AVehiclePawn::QuitGame);
-
-
 }
 
 void AVehiclePawn::ApplyThrottle(float val)
 {
 
-     // Print the throttle input value for debugging
+    // Print the throttle input value for debugging
 
     GetVehicleMovementComponent()->SetThrottleInput(val);
 }
@@ -118,7 +115,7 @@ void AVehiclePawn::OnHandbrakeReleased()
 
 void AVehiclePawn::QuitGame()
 {
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
     if (PlayerController)
     {
         PlayerController->ConsoleCommand("quit");
@@ -148,13 +145,15 @@ void AVehiclePawn::ShowLoadingWidget()
     if (LoadingWidgetClass)
     {
         // Create the widget and store the instance in the variable.
-        LoadingWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), LoadingWidgetClass);
+        LoadingWidgetInstance = CreateWidget<ULoadingScreenWidget>(GetWorld(), LoadingWidgetClass);
 
         // Check if the created widget instance is valid before adding it to the viewport.
         if (LoadingWidgetInstance)
         {
             // Add the widget to the viewport.
             LoadingWidgetInstance->AddToViewport();
+
+            LoadingWidgetInstance->PlayAnimationForward(LoadingWidgetInstance->FadeOff);
         }
     }
 }
@@ -194,7 +193,7 @@ void AVehiclePawn::UpdateInAirControl(float DeltaTime)
     //     // check if car is flipped on its side, and check if the car is in the air
     //     const bool bInAir = !GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
     //     // compares car upvector to the global upvector using dot product if less than 0.1f it's flipped
-    //     const bool bNotGrounded = FVector::DotProduct(GetActorUpVector(), FVector::UpVector) < 0.1f; 
+    //     const bool bNotGrounded = FVector::DotProduct(GetActorUpVector(), FVector::UpVector) < 0.1f;
 
     //     // only allow in-air movement if we are not on the ground, or in the air
     //     if (bInAir || bNotGrounded)
@@ -208,13 +207,32 @@ void AVehiclePawn::UpdateInAirControl(float DeltaTime)
 
     //         // taking the input values for throttle and steering and multiplying them against pitch and roll values
     //         // z value is left as 0 here, as we don't care about yaw. Only want to influence the pitch and roll.
-    //         // multiply the values by delta time to make it frame rate independent 
-    //         const FVector MovementVector = FVector(SteerInput * -AirMovementForceRoll, ForwardInput * AirMovementForcePitch, 0.f) * DeltaTime * 200.f; 
+    //         // multiply the values by delta time to make it frame rate independent
+    //         const FVector MovementVector = FVector(SteerInput * -AirMovementForceRoll, ForwardInput * AirMovementForcePitch, 0.f) * DeltaTime * 200.f;
 
     //         // this applies the movement vector to our car actor.
     //         const FVector NewAngularMovement = GetActorRotation().RotateVector(MovementVector);
 
     //         GetMesh()->SetPhysicsAngularVelocityInDegrees(NewAngularMovement, true); // the true adds this velocity onto the vehicles current velocity
-        // }
     // }
+    // }
+}
+
+void AVehiclePawn::SetupEngineAudio()
+{
+    UChaosWheeledVehicleMovementComponent *ChaosVehicleMovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
+    // The engine rotation speed
+    float EngineRotationSpeed = ChaosVehicleMovementComponent->GetEngineRotationSpeed();
+
+    // Define the original range of the EngineRotationSpeed (from minimum to maximum value it can have)
+    float MinOriginalSpeed = 1000.0f;
+    float MaxOriginalSpeed = 9000.0f; // Adjust this to the actual range of EngineRotationSpeed
+
+    // Define the target range you want to map the EngineRotationSpeed to (from minimum to maximum value)
+    float MinTargetSpeed = 0.0f;   // Adjust this to the minimum value of the target range
+    float MaxTargetSpeed = 1.0f; // Adjust this to the maximum value of the target range
+
+    // Map and clamp the EngineRotationSpeed to the target range
+    float MappedSpeed = FMath::GetMappedRangeValueClamped(FVector2D(MinOriginalSpeed, MaxOriginalSpeed), FVector2D(MinTargetSpeed, MaxTargetSpeed), EngineRotationSpeed);
+    EngineAudioComponent->SetFloatParameter(FName(TEXT("RPM Range")), MappedSpeed);
 }
