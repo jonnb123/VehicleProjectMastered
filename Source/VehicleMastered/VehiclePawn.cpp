@@ -45,7 +45,6 @@ void AVehiclePawn::BeginPlay()
     APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager;
     PlayerCameraManager->StartCameraFade(1.0f, 1.0f, 3.0f, FLinearColor::Black);
 
-    
 }
 
 void AVehiclePawn::Tick(float DeltaTime)

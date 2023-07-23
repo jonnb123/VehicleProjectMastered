@@ -11,10 +11,13 @@ void UCarWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    FTimerHandle TimerHandle;
+    FTimerHandle TimerHandleTime;
+    FTimerHandle TimerHandleSpeed;
     // Set up the timer to call the UpdateTimeRemainingText function every 0.1 seconds
     float UpdateInterval = 0.1f;
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UCarWidget::UpdateTimeLabelText, UpdateInterval, true);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandleTime, this, &UCarWidget::UpdateTimeLabelText, UpdateInterval, true);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandleSpeed, this, &UCarWidget::UpdateSpeedText, UpdateInterval, true);
+
 }
 
 void UCarWidget::BeginPlay()
@@ -41,8 +44,14 @@ void UCarWidget::UpdateTimeLabelText()
 void UCarWidget::UpdateSpeedText()
 {
     APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
-	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+    // Get the pawn possessed by the player controller (should be your AVehiclePawn)
+    AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
 
-    MyVehiclePawn->GetVehicleMovementComponent()->GetForwardSpeed();
+    float Speed = MyVehiclePawn->GetVehicleMovementComponent()->GetForwardSpeed();
+    float SpeedMph = FMath::FloorToDouble(FMath::Abs(Speed * 0.0237)); // multiply by 0.0237 to get mph
+
+    // Update the TimeRemainingText with the new value
+    FString SpeedLabelString = FString::Printf(TEXT("%.1f mph"), SpeedMph);
+
+    SpeedLabel->SetText(FText::FromString(SpeedLabelString));
 }
