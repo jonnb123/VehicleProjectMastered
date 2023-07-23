@@ -128,10 +128,55 @@ void AVehiclePawn::QuitGame()
 
 void AVehiclePawn::ShowWidgetOnTimeUp()
 {
-    // Create the widget and add it to the class here
+    // Make sure to check if the widget class is valid before creating it.
     if (WidgetClass)
     {
-        CreateWidget<UUserWidget>(GetWorld(), WidgetClass)->AddToViewport();
+        // Create the widget and store the instance in the variable.
+        MainWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), WidgetClass);
+
+        // Check if the created widget instance is valid before adding it to the viewport.
+        if (MainWidgetInstance)
+        {
+            // Add the widget to the viewport.
+            MainWidgetInstance->AddToViewport();
+        }
+    }
+}
+
+void AVehiclePawn::ShowLoadingWidget()
+{
+    // Make sure to check if the widget class is valid before creating it.
+    if (LoadingWidgetClass)
+    {
+        // Create the widget and store the instance in the variable.
+        LoadingWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), LoadingWidgetClass);
+
+        // Check if the created widget instance is valid before adding it to the viewport.
+        if (LoadingWidgetInstance)
+        {
+            // Add the widget to the viewport.
+            LoadingWidgetInstance->AddToViewport();
+        }
+    }
+}
+
+void AVehiclePawn::HideWidgetOnTimeUp()
+{
+    if (MainWidgetInstance)
+    {
+        // Remove the widget from the viewport.
+        MainWidgetInstance->RemoveFromViewport();
+        MainWidgetInstance = nullptr; // Set the pointer to nullptr to avoid using invalid references.
+    }
+}
+
+void AVehiclePawn::HideLoadingWidget()
+{
+    if (LoadingWidgetInstance)
+    {
+        // Remove the widget from the viewport.
+        LoadingWidgetInstance->RemoveFromViewport();
+        LoadingWidgetInstance = nullptr; // Set the pointer to nullptr to avoid using invalid references.
     }
 }
 

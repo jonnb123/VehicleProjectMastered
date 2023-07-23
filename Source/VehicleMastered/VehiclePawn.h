@@ -40,15 +40,23 @@ public:
 	// Quit
 	void QuitGame();
 
+	// widget functions
 	void ShowWidgetOnTimeUp();
-
+	void ShowLoadingWidget();
+	void HideWidgetOnTimeUp();
+	void HideLoadingWidget();
+	// this is technically of type UCarWidget but using TSubclass with UUserWidget works too
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> WidgetClass;
+    UUserWidget* MainWidgetInstance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> LoadingWidgetClass;
+	UUserWidget* LoadingWidgetInstance;
 
 	// Update in-air physics, this uses the tick-function
 	void UpdateInAirControl(float DeltaTime);
 
-	// add the widget, this is technically of type UCarWidget but using TSubclass with UUserWidget works too
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UUserWidget> WidgetClass;
+	
 
 protected:
 	// spring arm that will offset the camera

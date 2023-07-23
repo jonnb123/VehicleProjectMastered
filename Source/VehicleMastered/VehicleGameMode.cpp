@@ -10,7 +10,10 @@
 void AVehicleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
+	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
+	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+	MyVehiclePawn->ShowLoadingWidget();
 	GameStart();
 }
 
@@ -24,8 +27,10 @@ void AVehicleGameMode::GameStart()
 	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
 	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+	MyVehiclePawn->HideLoadingWidget();
 	MyVehiclePawn->ShowWidgetOnTimeUp();
-		OutOfTime(); }); // once the 3 second timer is complete call the main game timer!
+		OutOfTime(); 
+		}); // once the 3 second timer is complete call the main game timer!
 	GetWorldTimerManager().SetTimer(StartTimerHandle, StartTimerDelegate, DelayTime, false);
 }
 
@@ -49,6 +54,8 @@ void AVehicleGameMode::GameEnd(bool Win)
 	DisablePlayerInput();
 	// Get the default player controller
 	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+	MyVehiclePawn->HideWidgetOnTimeUp();
 	PlayerController->SetShowMouseCursor(true);
 	if (Win == true)
 	{
