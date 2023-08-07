@@ -44,20 +44,21 @@ AVehiclePawn::AVehiclePawn() // constructor
 void AVehiclePawn::BeginPlay()
 {
     Super::BeginPlay();
-    
 }
 
 void AVehiclePawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     SetupEngineAudio();
+
+    UpdateInAirControl(DeltaTime);
 }
 
 void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    // bindings
+    // bindings - these are deprecated, will need upgrading
     PlayerInputComponent->BindAxis("Throttle", this, &AVehiclePawn::ApplyThrottle);
     PlayerInputComponent->BindAxis("Reverse", this, &AVehiclePawn::ApplyReverse);
     PlayerInputComponent->BindAxis("Steer", this, &AVehiclePawn::ApplySteering);
@@ -71,8 +72,6 @@ void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputCompone
 
 void AVehiclePawn::ApplyThrottle(float val)
 {
-
-    // Print the throttle input value for debugging
 
     GetVehicleMovementComponent()->SetThrottleInput(val);
 }
@@ -180,42 +179,57 @@ void AVehiclePawn::HideLoadingWidget()
 
 void AVehiclePawn::UpdateInAirControl(float DeltaTime)
 {
-    // if (GetVehicleMovementComponent())
-    // {
-    //     FCollisionQueryParams QueryParams;
-    //     QueryParams.AddIgnoredActor(this);
+    if (GetVehicleMovementComponent())
+    {
+        FCollisionQueryParams QueryParams;
+        QueryParams.AddIgnoredActor(this);
 
-    //     const FVector TraceStart = GetActorLocation() + FVector(0.f, 0.f, 50.f);
-    //     const FVector TraceEnd = GetActorLocation() + FVector(0.f, 0.f, 200.f);
+        const FVector TraceStart = GetActorLocation() + FVector(0.f, 0.f, 500.f); // go higher up the car, at 0 it doesn't work
+        const FVector TraceEnd = GetActorLocation() + FVector(0.f, 0.f, 200.f);
 
-    //     FHitResult Hit;
+        FHitResult Hit;
+        DrawDebugLine(
+            GetWorld(),    // The World context in which to draw the debug line
+            TraceStart,    // The starting point of the line trace
+            TraceEnd,      // The ending point of the line trace
+            FColor::Green, // The color of the debug line (green in this case)
+            false,         // Whether to persist the debug line (false means it will disappear after a short duration)
+            -1.f,          // The duration for which the debug line will be visible (-1.f means it will be visible for a short duration)
+            0,             // The depth priority of the debug line (0 is the default value)
+            2.f            // The thickness of the debug line
+        );
 
-    //     // check if car is flipped on its side, and check if the car is in the air
-    //     const bool bInAir = !GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
-    //     // compares car upvector to the global upvector using dot product if less than 0.1f it's flipped
-    //     const bool bNotGrounded = FVector::DotProduct(GetActorUpVector(), FVector::UpVector) < 0.1f;
+        // check if car is flipped on its side, and check if the car is in the air
+        // const bool bInAir = !GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+        const bool bInAir = !GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+        // compares car upvector to the global upvector using dot product if less than 0.1f it's flipped
+        const bool bNotGrounded = FVector::DotProduct(GetActorUpVector(), FVector::UpVector) < 0.1f;
+        UE_LOG(LogTemp, Warning, TEXT("bInAir: %s"), bInAir ? TEXT("true") : TEXT("false"));
+        UE_LOG(LogTemp, Warning, TEXT("bNotGrounded: %s"), bNotGrounded ? TEXT("true") : TEXT("false"));
+        // only allow in-air movement if we are not on the ground, or in the air
+        if (bInAir || bNotGrounded)
+        {
+            const float ForwardInput = InputComponent->GetAxisValue("Throttle");
+            const float SteerInput = InputComponent->GetAxisValue("Steer");
 
-    //     // only allow in-air movement if we are not on the ground, or in the air
-    //     if (bInAir || bNotGrounded)
-    //     {
-    //         const float ForwardInput = InputComponent->GetAxisValue("Throttle");
-    //         const float SteerInput = InputComponent->GetAxisValue("Steer");
+            // If the car is grounded allow the player to roll the car over
+            const float AirMovementForcePitch = 1.5f; // this is front and back flip
+            // const float AirMovementForcePitch = !bInAir && bNotGrounded ? 10.f : 1.5f; // this is front and back flip
+            const float AirMovementForceRoll = !bInAir && bNotGrounded ? 20.f : 1.5f; // side flip - if not in the air and not grounded increase the force
+            UE_LOG(LogTemp, Warning, TEXT("AirMovementForceRoll: %f"), AirMovementForceRoll);
+           
 
-    //         // If the car is grounded allow the player to roll the car over
-    //         const float AirMovementForcePitch = 3.f;
-    //         const float AirMovementForceRoll = !bInAir && bNotGrounded ? 20.f : 3.f; // if we are rolled over need to increase the force
+            // taking the input values for throttle and steering and multiplying them against pitch and roll values
+            // z value is left as 0 here, as we don't care about yaw. Only want to influence the pitch and roll.
+            // multiply the values by delta time to make it frame rate independent
+            const FVector MovementVector = FVector(SteerInput * -AirMovementForceRoll, ForwardInput * AirMovementForcePitch, 0.f) * DeltaTime * 200.f;
 
-    //         // taking the input values for throttle and steering and multiplying them against pitch and roll values
-    //         // z value is left as 0 here, as we don't care about yaw. Only want to influence the pitch and roll.
-    //         // multiply the values by delta time to make it frame rate independent
-    //         const FVector MovementVector = FVector(SteerInput * -AirMovementForceRoll, ForwardInput * AirMovementForcePitch, 0.f) * DeltaTime * 200.f;
+            // this applies the movement vector to our car actor.
+            const FVector NewAngularMovement = GetActorRotation().RotateVector(MovementVector);
 
-    //         // this applies the movement vector to our car actor.
-    //         const FVector NewAngularMovement = GetActorRotation().RotateVector(MovementVector);
-
-    //         GetMesh()->SetPhysicsAngularVelocityInDegrees(NewAngularMovement, true); // the true adds this velocity onto the vehicles current velocity
-    // }
-    // }
+            GetMesh()->SetPhysicsAngularVelocityInDegrees(NewAngularMovement, true); // the true adds this velocity onto the vehicles current velocity
+        }
+    }
 }
 
 void AVehiclePawn::SetupEngineAudio()
@@ -229,7 +243,7 @@ void AVehiclePawn::SetupEngineAudio()
     float MaxOriginalSpeed = 9000.0f; // Adjust this to the actual range of EngineRotationSpeed
 
     // Define the target range you want to map the EngineRotationSpeed to (from minimum to maximum value)
-    float MinTargetSpeed = 0.0f;   // Adjust this to the minimum value of the target range
+    float MinTargetSpeed = 0.0f; // Adjust this to the minimum value of the target range
     float MaxTargetSpeed = 1.0f; // Adjust this to the maximum value of the target range
 
     // Map and clamp the EngineRotationSpeed to the target range
