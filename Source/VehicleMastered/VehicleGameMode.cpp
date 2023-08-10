@@ -11,42 +11,49 @@ void AVehicleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
 	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
 	MyVehiclePawn->ShowLoadingWidget();
-	GameStart();
+	LoadGame();
 }
 
-void AVehicleGameMode::GameStart()
+void AVehicleGameMode::LoadGame()
 {
-	// Set a 3-second delay before calling GameStart function
+	// Set a  delay before calling GameStart function
 	DelayTime = 1.5;
 
 	StartTimerDelegate.BindLambda([this]()
 								  {
 	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
 	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
 	MyVehiclePawn->HideLoadingWidget();
 	MyVehiclePawn->ShowWidgetOnTimeUp();
-		OutOfTime(); 
-		}); // once the 3 second timer is complete call the main game timer!
+		StartGame(); 
+		}); // once the timer is complete call the main game timer!
 	GetWorldTimerManager().SetTimer(StartTimerHandle, StartTimerDelegate, DelayTime, false);
 }
 
-void AVehicleGameMode::DisablePlayerInput()
+void AVehicleGameMode::StartGame()
 {
-	// if the game ends disable player input!
-	// Get the default player controller
-	// APlayerController *PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
-	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
-	MyVehiclePawn->DisableInput(PlayerController);
-	MyVehiclePawn->GetVehicleMovementComponent()->SetSteeringInput(0.0f);
+	TimeRemaining = 25.0f;
 
-	MyVehiclePawn->GetVehicleMovementComponent()->SetThrottleInput(0.0f);
-	MyVehiclePawn->GetVehicleMovementComponent()->SetBrakeInput(0.0f);
+	TimerDelegate.BindLambda([this]()
+							 {
+								 // Check if TimeRemaining has reached zero
+								 if (TimeRemaining <= 0.0f)
+								 {
+									// If the timer runs out, call the GameEnd function with win set to false
+									GameEnd(false);
+									GetWorldTimerManager().ClearTimer(TimerHandle); 
+								 }
+								 else
+								 {
+									 // Decrement TimeRemaining by 1 second
+									 TimeRemaining -= 1.0f;
+								 } });
+
+	// Start the repeating timer with an interval of 1 second
+	float TimerInterval = 1.0f;
+	GetWorldTimerManager().SetTimer(TimerHandle, TimerDelegate, TimerInterval, true);
 }
 
 void AVehicleGameMode::GameEnd(bool Win)
@@ -78,37 +85,27 @@ void AVehicleGameMode::GameEnd(bool Win)
 	}
 }
 
+void AVehicleGameMode::DisablePlayerInput()
+{
+	APlayerController *PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	// Get the pawn possessed by the player controller (should be your AVehiclePawn)
+	AVehiclePawn *MyVehiclePawn = Cast<AVehiclePawn>(PlayerController->GetPawn());
+	MyVehiclePawn->DisableInput(PlayerController);
+	MyVehiclePawn->GetVehicleMovementComponent()->SetSteeringInput(0.0f);
+	MyVehiclePawn->GetVehicleMovementComponent()->SetThrottleInput(0.0f);
+	MyVehiclePawn->GetVehicleMovementComponent()->SetBrakeInput(0.0f);
+}
+
+
+// This is used in Checkpoint.cpp
 void AVehicleGameMode::CrossFinishLine()
 {
 	GameEnd(true);
 }
 
-void AVehicleGameMode::OutOfTime()
-{
-	// Delay of 3 seconds before calling the GameStart function
-	TimeRemaining = 500.0f;
 
-	TimerDelegate.BindLambda([this]()
-							 {
-								 // Check if TimeRemaining has reached zero
-								 if (TimeRemaining <= 0.0f)
-								 {
-									// If the timer runs out, call the GameEnd function with win set to false
-									GameEnd(false);
-									GetWorldTimerManager().ClearTimer(TimerHandle); 
-								 }
-								 else
-								 {
-									 // Decrement TimeRemaining by 1 second
-									 TimeRemaining -= 1.0f;
-								 } });
 
-	// Start the repeating timer with an interval of 1 second
-	float TimerInterval = 1.0f;
-	GetWorldTimerManager().SetTimer(TimerHandle, TimerDelegate, TimerInterval, true);
-}
-
-// this adds timers
+// This is used in Checkpoint.cpp
 void AVehicleGameMode::AddTimeToTimerDuration(float TimeToAdd)
 {
 	TimeRemaining += TimeToAdd;

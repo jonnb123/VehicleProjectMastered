@@ -6,8 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "WinScreenWidget.generated.h" // should always be the last include
 
-
-
 /**
  * 
  */

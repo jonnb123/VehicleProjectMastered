@@ -6,9 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "CarWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class VEHICLEMASTERED_API UCarWidget : public UUserWidget
 {

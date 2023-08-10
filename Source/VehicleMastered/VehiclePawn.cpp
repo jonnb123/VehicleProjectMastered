@@ -3,28 +3,14 @@
 // The AWheeledVehiclePawn comes with a UWheeledVehicleMovementComponent
 
 #include "VehiclePawn.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/InputComponent.h"
-#include "ChaosVehicleMovementComponent.h" // this is used now instead of WheeledVehicleMovementComponent4W.h
-#include "CarWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/PlayerController.h"
-#include "Camera/PlayerCameraManager.h"
-#include "UMG/Public/Animation/WidgetAnimation.h"
 #include "LoadingScreenWidget.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 
-// make the inputs variables so we I don't mistype
-// static const FName NAME_SteerInput("Steer");
-// static const FName NAME_ThrottleInput("Throttle");
-
 AVehiclePawn::AVehiclePawn() // constructor
 {
-    // this gets the vehicle movement component
-    // UChaosWheeledVehicleMovementComponent* Vehicle = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovement());
-
     // Create a spring arm component for our chase camera
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
@@ -49,7 +35,7 @@ void AVehiclePawn::BeginPlay()
 void AVehiclePawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    SetupEngineAudio();
+    EngineAudio();
 
     UpdateInAirControl(DeltaTime);
 }
@@ -72,7 +58,6 @@ void AVehiclePawn::SetupPlayerInputComponent(UInputComponent *PlayerInputCompone
 
 void AVehiclePawn::ApplyThrottle(float val)
 {
-
     GetVehicleMovementComponent()->SetThrottleInput(val);
 }
 
@@ -184,23 +169,22 @@ void AVehiclePawn::UpdateInAirControl(float DeltaTime)
         FCollisionQueryParams QueryParams;
         QueryParams.AddIgnoredActor(this);
 
-        const FVector TraceStart = GetActorLocation() + FVector(0.f, 0.f, 500.f); // go higher up the car, at 0 it doesn't work
-        const FVector TraceEnd = GetActorLocation() + FVector(0.f, 0.f, 200.f);
+        const FVector TraceStart = GetActorLocation() + FVector(0.f, 0.f, 200.f); 
+        const FVector TraceEnd = GetActorLocation() + FVector(0.f, 0.f, -40.f);
 
         FHitResult Hit;
-        DrawDebugLine(
-            GetWorld(),    // The World context in which to draw the debug line
-            TraceStart,    // The starting point of the line trace
-            TraceEnd,      // The ending point of the line trace
-            FColor::Green, // The color of the debug line (green in this case)
-            false,         // Whether to persist the debug line (false means it will disappear after a short duration)
-            -1.f,          // The duration for which the debug line will be visible (-1.f means it will be visible for a short duration)
-            0,             // The depth priority of the debug line (0 is the default value)
-            2.f            // The thickness of the debug line
-        );
+        // DrawDebugLine(
+        //     GetWorld(),    // The World context in which to draw the debug line
+        //     TraceStart,    // The starting point of the line trace
+        //     TraceEnd,      // The ending point of the line trace
+        //     FColor::Green, // The color of the debug line (green in this case)
+        //     false,         // Whether to persist the debug line (false means it will disappear after a short duration)
+        //     -1.f,          // The duration for which the debug line will be visible (-1.f means it will be visible for a short duration)
+        //     0,             // The depth priority of the debug line (0 is the default value)
+        //     2.f            // The thickness of the debug line
+        // );
 
-        // check if car is flipped on its side, and check if the car is in the air
-        // const bool bInAir = !GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+        // if line trace hits nothing bInAir = true
         const bool bInAir = !GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
         // compares car upvector to the global upvector using dot product if less than 0.1f it's flipped
         const bool bNotGrounded = FVector::DotProduct(GetActorUpVector(), FVector::UpVector) < 0.1f;
@@ -213,12 +197,12 @@ void AVehiclePawn::UpdateInAirControl(float DeltaTime)
             const float SteerInput = InputComponent->GetAxisValue("Steer");
 
             // If the car is grounded allow the player to roll the car over
-            const float AirMovementForcePitch = 1.5f; // this is front and back flip
+            const float AirMovementForcePitch = 1.f; // this is front and back flip
             // const float AirMovementForcePitch = !bInAir && bNotGrounded ? 10.f : 1.5f; // this is front and back flip
-            const float AirMovementForceRoll = !bInAir && bNotGrounded ? 20.f : 1.5f; // side flip - if not in the air and not grounded increase the force
+            const float AirMovementForceRoll = bInAir && bNotGrounded ? 10.f : 1.5f; // side flip - if not in the air and not grounded increase the force
+            // const float AirMovementForceRoll = 20.f; // side flip - if not in the air and not grounded increase the force
             UE_LOG(LogTemp, Warning, TEXT("AirMovementForceRoll: %f"), AirMovementForceRoll);
            
-
             // taking the input values for throttle and steering and multiplying them against pitch and roll values
             // z value is left as 0 here, as we don't care about yaw. Only want to influence the pitch and roll.
             // multiply the values by delta time to make it frame rate independent
@@ -232,15 +216,15 @@ void AVehiclePawn::UpdateInAirControl(float DeltaTime)
     }
 }
 
-void AVehiclePawn::SetupEngineAudio()
+void AVehiclePawn::EngineAudio()
 {
     UChaosWheeledVehicleMovementComponent *ChaosVehicleMovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
     // The engine rotation speed
     float EngineRotationSpeed = ChaosVehicleMovementComponent->GetEngineRotationSpeed();
 
     // Define the original range of the EngineRotationSpeed (from minimum to maximum value it can have)
-    float MinOriginalSpeed = 1000.0f;
-    float MaxOriginalSpeed = 9000.0f; // Adjust this to the actual range of EngineRotationSpeed
+    float MinOriginalSpeed = 1000.0f; // Engine idle RPM in blueprint
+    float MaxOriginalSpeed = 9000.0f; // Max RPM in blueprint
 
     // Define the target range you want to map the EngineRotationSpeed to (from minimum to maximum value)
     float MinTargetSpeed = 0.0f; // Adjust this to the minimum value of the target range

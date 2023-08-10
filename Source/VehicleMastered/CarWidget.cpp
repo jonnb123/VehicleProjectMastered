@@ -20,12 +20,6 @@ void UCarWidget::NativeConstruct()
 
 }
 
-void UCarWidget::BeginPlay()
-{
-    // Get the specific Game Mode class directly
-    // AVehicleGameMode *GameMode = GetWorld()->GetAuthGameMode<AVehicleGameMode>();
-}
-
 void UCarWidget::UpdateTimeLabelText()
 {
     // Get the specific Game Mode class directly
@@ -54,4 +48,10 @@ void UCarWidget::UpdateSpeedText()
     FString SpeedLabelString = FString::Printf(TEXT("%.1f mph"), SpeedMph);
 
     SpeedLabel->SetText(FText::FromString(SpeedLabelString));
+}
+
+
+void UCarWidget::BeginPlay()
+{
+
 }

@@ -18,34 +18,54 @@ class VEHICLEMASTERED_API AVehiclePawn : public AWheeledVehiclePawn // using the
 public:
 	AVehiclePawn(); // Constructor
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void SetupPlayerInputComponent(UInputComponent *PlayerInputComponent) override; // registers when player presses wasd
-
-	// throttle and steering, where val is how much throttle or steering to apply
-	void ApplyThrottle(float val);
-	void ApplySteering(float val);
-	void ApplyReverse(float val);
-
-	// Look around
-	void LookUp(float val);
-	void Turn(float val);
-
-	// handbrake
-	void OnHandbrakePressed();
-	void OnHandbrakeReleased();
-
-	// Quit
-	void QuitGame();
-
 	// widget functions
 	void ShowWidgetOnTimeUp();
 	void ShowLoadingWidget();
 	void HideWidgetOnTimeUp();
 	void HideLoadingWidget();
+	
+
+protected:
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
+	
+	// Input 
+	virtual void SetupPlayerInputComponent(UInputComponent *PlayerInputComponent) override; 
+
+	void ApplyThrottle(float val);
+
+	void ApplySteering(float val);
+
+	void ApplyReverse(float val);
+
+	void LookUp(float val);
+
+	void Turn(float val);
+
+	void OnHandbrakePressed();
+
+	void OnHandbrakeReleased();
+
+	// This is called in Tick
+	void EngineAudio();
+
+	// Update in-air physics, this uses the tick-function
+	void UpdateInAirControl(float DeltaTime);
+
+	// Quit
+	void QuitGame();
+
+	// spring arm that will offset the camera
+	UPROPERTY(Category = Camera, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent *SpringArm;
+
+	// spring arm that will offset the camera
+	UPROPERTY(Category = Camera, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent *Camera;
+
+	// Instances of widgets
+
 	// this is technically of type UCarWidget but using TSubclass with UUserWidget works too
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UUserWidget> WidgetClass;
@@ -55,24 +75,12 @@ public:
 	TSubclassOf<class ULoadingScreenWidget> LoadingWidgetClass;
 	ULoadingScreenWidget *LoadingWidgetInstance;
 
-	// Update in-air physics, this uses the tick-function
-	void UpdateInAirControl(float DeltaTime);
-
 	// Audio
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAudioComponent* EngineAudioComponent;
+	UAudioComponent *EngineAudioComponent;
 
-	void SetupEngineAudio();
-
-
-protected:
-	// spring arm that will offset the camera
-	UPROPERTY(Category = Camera, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent *SpringArm;
-
-	// spring arm that will offset the camera
-	UPROPERTY(Category = Camera, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent *Camera;
+	
 
 
+	
 };
